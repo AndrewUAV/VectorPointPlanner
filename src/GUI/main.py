@@ -25,7 +25,8 @@ from VectorPointPlanner import VectorPointPlanner
 
 def main(page: ft.Page):
     vpp = VectorPointPlanner()
-    vpp.get_page(page)
+    vpp.setup(page)
 
 
-ft.app(target=main)
+#ft.app(target=main)
+ft.app(main, view=ft.AppView.WEB_BROWSER)
