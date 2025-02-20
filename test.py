@@ -1,40 +1,10 @@
-import flet as ft
+import serial.tools.list_ports
 
-def main(page: ft.Page):
-    page.title = "Routes Example"
+def get_com_ports():
+    ports = serial.tools.list_ports.comports()
+    available_ports = [port.device for port in ports]
+    return available_ports
 
-    def route_change(route):
-        page.views.clear()
-        page.views.append(
-            ft.View(
-                "/",
-                [
-                    ft.AppBar(title=ft.Text("Flet app"), bgcolor=ft.Colors.BROWN),
-                    ft.ElevatedButton("Visit Store", on_click=lambda _: page.go("/store")),
-                ],
-            )
-        )
-        if page.route == "/store":
-            page.views.append(
-                ft.View(
-                    "/store",
-                    [
-                        ft.AppBar(title=ft.Text("Store"), bgcolor=ft.Colors.BLUE),
-                        ft.ElevatedButton("Go Home", on_click=lambda _: page.go("/")),
-                    ],
-                )
-            )
-        page.update()
-
-    def view_pop(view):
-        page.views.pop()
-        top_view = page.views[-1]
-        page.go(top_view.route)
-
-    page.on_route_change = route_change
-    page.on_view_pop = view_pop
-    page.go(page.route)
-
-
-ft.app(main)
-#ft.app(main, view=ft.AppView.WEB_BROWSER)
+if __name__ == "__main__":
+    com_ports = get_com_ports()
+    print("Доступні COM порти:", com_ports)

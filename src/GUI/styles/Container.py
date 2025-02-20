@@ -6,7 +6,7 @@ class ContainerCreator(ft.Container):
         super().__init__()
         self.width = width
         self.height = height
-        self.bgcolor = ft.colors.WHITE
+        self.bgcolor = ft.colors.WHITE # BLACK
         self.border_radius = ft.border_radius.all(border_radius)
         self.padding = padding
         if content is not None:
