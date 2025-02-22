@@ -1,7 +1,9 @@
 import flet as ft
+import asyncio
 import serial.tools.list_ports
 
 from Map import Map
+from ObjectInSpace import ObjectInSpace
 from VectorPointPalnnerTitle import VectorPointPlannerTitle
 
 from styles.Dropdown import DropdownCreator
@@ -26,6 +28,13 @@ class VectorPointPlanner:
         self.page.theme_mode = self.theme
         self.page.update()
 
+    def add_obj_in_space(self):
+        obj_in_space = ObjectInSpace(0.08)
+        img = ft.Image(width=obj_in_space.width, height=obj_in_space.height,
+                            src_base64=obj_in_space.get_frame())
+        asyncio.create_task(obj_in_space.update_loop(self.page, img))
+        return img
+
     def create_main_buttons(self):
         self.page.add(ft.Row(controls=[
             ft.Row(controls=[
@@ -44,12 +53,15 @@ class VectorPointPlanner:
     def create_main_containers(self):
         self.page.add(ft.Row(controls=[
                                         ContainerCreator(width=750, height=700, border_radius=10,
-                                                         padding=1),
+                                                         padding=1, content=self.add_obj_in_space(),
+                                                         aligment=ft.alignment.top_left),
+
                                         ContainerCreator(width=750, height=700, border_radius=10,
                                                          padding=1, content=Map().setup_map())
                                       ]
                             )
                       )
+
 
     def setup(self):
         self.config_page()
@@ -58,7 +70,7 @@ class VectorPointPlanner:
 
 
 
-def main(page: ft.Page):
+async def main(page: ft.Page):
     vvp = VectorPointPlanner(page)
     vvp.setup()
 
