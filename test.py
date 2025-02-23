@@ -1,80 +1,79 @@
-import pygame
-import flet as ft
-import io
+import cv2
 import base64
+import flet as ft
 import threading
 import time
-import math
+from io import BytesIO
+from PIL import Image
+from styles.Container import ContainerCreator
 
-pygame.init()
-WIDTH, HEIGHT = 400, 300
-surface = pygame.Surface((WIDTH, HEIGHT))
-WHITE = (255, 255, 255)
-BLUE = (100, 70, 255)
-EDGE_COLOR = (255, 255, 255)
+class VideoCapture:
+    def __init__(self, video_device):
+        self.video_device = video_device
+        self.cap = cv2.VideoCapture(self.video_device)
 
+    def capture_video(self, img_controls):
+        if not self.cap.isOpened():
+            print("Error with open camera")
+            return
 
-class ObjectInSpace:
-    def __init__(self, scale=1):
-        self.scale = scale
-        self.vertices = [[x / self.scale, y / self.scale, z / self.scale] for x, y, z in [
-            [-5, -2, 0.5], [0, 8, 0.5], [5, -2, 0.5], [0, 0, 0.5],
-            [-4, -1, -0.5], [0, 6, -0.5], [4, -1, -0.5], [0, 1, -0.5]]]
-        self.edges = [(0, 1), (1, 2), (2, 3), (3, 0), (4, 5), (5, 6), (6, 7), (7, 4), (0, 4), (1, 5), (2, 6), (3, 7)]
-        self.faces = [(0, 1, 3), (1, 2, 3), (4, 5, 7), (5, 6, 7), (0, 1, 5), (0, 4, 5),
-                      (2, 3, 7), (2, 6, 7), (0, 3, 4), (3, 4, 7), (1, 2, 5), (2, 5, 6)]
+        while True:
+            ret, frame = self.cap.read()
+            if not ret:
+                break
 
-    def rotate_3d(self, point, angle_x, angle_y, angle_z):
-        x, y, z = point
-        cos_x, sin_x = math.cos(angle_x), math.sin(angle_x)
-        y, z = y * cos_x - z * sin_x, y * sin_x + z * cos_x
-        cos_y, sin_y = math.cos(angle_y), math.sin(angle_y)
-        x, z = x * cos_y + z * sin_y, -x * sin_y + z * cos_y
-        cos_z, sin_z = math.cos(angle_z), math.sin(angle_z)
-        x, y = x * cos_z - y * sin_z, x * sin_z + y * cos_z
-        return x, y, z
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            pil_image = Image.fromarray(frame)
 
-    def project_3d_to_2d(self, point, fov=400, distance=5):
-        x, y, z = point
-        z += distance
-        factor = fov / (fov + z)
-        x, y = x * factor, y * factor
-        return int(WIDTH / 2 + x * WIDTH / 4), int(HEIGHT / 2 - y * HEIGHT / 4)
+            buffered = BytesIO()
+            pil_image.save(buffered, format="JPEG")
+            img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
+
+            for img in img_controls:
+                img.src_base64 = img_str
+                img.update()
+
+            time.sleep(0.03)
+        self.cap.release()
 
 
-OBJ = ObjectInSpace(5)
-angle_x, angle_y, angle_z = 0, 0, 0
+class VideoStreamer:
+    def __init__(self):
+        # створюємо один компонент відеозахоплення,
+        # який буде передавати один і той же потік у всі контейнери
+        self.video_capture = VideoCapture(0)
+
+    def create_containers_2x3(self):
+        # створимо 6 компонентів для відображення відео
+        imgs = [ft.Image(width=350, height=300, fit=ft.ImageFit.CONTAIN) for _ in range(6)]
+
+        # створюємо контейнери з додаванням компоненту ft.Image
+        container1 = ContainerCreator(width=350, height=300, border_radius=20, padding=20, content=imgs[0])
+        container2 = ContainerCreator(width=350, height=300, border_radius=20, padding=20, content=imgs[1])
+        container3 = ContainerCreator(width=350, height=300, border_radius=20, padding=20, content=imgs[2])
+        container4 = ContainerCreator(width=350, height=300, border_radius=20, padding=20, content=imgs[3])
+        container5 = ContainerCreator(width=350, height=300, border_radius=20, padding=20, content=imgs[4])
+        container6 = ContainerCreator(width=350, height=300, border_radius=20, padding=20, content=imgs[5])
+
+        # Розташування контейнерів у сітці 2x3
+        grid = ft.Column(
+            controls=[
+                ft.Row(controls=[container1, container2, container3]),
+                ft.Row(controls=[container4, container5, container6]),
+            ]
+        )
+        return grid, imgs
+
+    def start_stream(self, imgs):
+        # Запускаємо відеопотік в окремому потоці
+        threading.Thread(target=self.video_capture.capture_video, args=(imgs,), daemon=True).start()
 
 
-def get_frame():
-    global angle_x, angle_y, angle_z
-    surface.fill(WHITE)
-    angle_x += 0.02
-    angle_y += 0.01
-    angle_z += 0.005
-    transformed_vertices = [OBJ.rotate_3d(v, angle_x, angle_y, angle_z) for v in OBJ.vertices]
-    projected_points = [OBJ.project_3d_to_2d(v) for v in transformed_vertices]
-    for face in OBJ.faces:
-        pygame.draw.polygon(surface, BLUE, [projected_points[i] for i in face])
-    for edge in OBJ.edges:
-        pygame.draw.line(surface, EDGE_COLOR, projected_points[edge[0]], projected_points[edge[1]], 2)
-    buffer = io.BytesIO()
-    pygame.image.save(surface, buffer, "PNG")
-    buffer.seek(0)
-    return base64.b64encode(buffer.read()).decode("utf-8")
+if __name__ == "__main__":
+    def main(page: ft.Page):
+        vs = VideoStreamer()
+        grid, imgs = vs.create_containers_2x3()
+        page.add(grid)
+        vs.start_stream(imgs)
 
-
-def update_loop(page: ft.Page, img: ft.Image, interval=0.05):
-    while True:
-        img.src_base64 = get_frame()
-        page.update()
-        time.sleep(interval)
-
-
-def main(page: ft.Page):
-    img = ft.Image(width=WIDTH, height=HEIGHT, src_base64=get_frame())
-    page.add(img)
-    threading.Thread(target=update_loop, args=(page, img), daemon=True).start()
-
-
-ft.app(target=main)
+    ft.app(main)
