@@ -15,7 +15,6 @@ class Map:
         self.width = 800 if width is None else width
         self.height = 600 if height is None else height
 
-
     def setup_map(self):
         return map.Map(
             expand=self.expend,
