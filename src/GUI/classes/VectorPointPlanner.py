@@ -17,3 +17,4 @@ if __name__ == "__main__":
         page.add(VectorPointPlanner().setup_vpp())
 
     ft.app(main)
+    #ft.app(main, view=ft.AppView.WEB_BROWSER)
