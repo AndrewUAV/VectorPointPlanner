@@ -1,5 +1,7 @@
 import flet as ft
+
 from MainBar import MainBar
+from MainVisualizationData import MainVisualizationData
 
 
 class VectorPointPlanner:
@@ -9,7 +11,9 @@ class VectorPointPlanner:
     def setup_vpp(self):
         return ft.Column(controls=[
             MainBar().create_main_bar(),
-        ])
+            MainVisualizationData().setup_data_visualization(),
+        ],
+            expand=True)
 
 
 if __name__ == "__main__":
