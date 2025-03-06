@@ -13,6 +13,7 @@ class MainBar:
         self.data_button = ButtonCreator(text="Data")
         self.mission_planing_button = ButtonCreator(text="Mission Planning")
         self.setting_button = ButtonCreator(text="Settings")
+        self.video_streamer_button = ButtonCreator(text="Video Streamer")
         self.connect_button = ButtonCreator(text="Connect")
 
         self.baudrate_list = [4800, 9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600]
@@ -32,6 +33,7 @@ class MainBar:
                     self.data_button,
                     self.mission_planing_button,
                     self.setting_button,
+                    self.video_streamer_button,
 
                     self.ports_dropdown,
                     self.baudrate_dropdown,
