@@ -6,9 +6,9 @@ from new_styles.Tabs import TabsCreator
 class MainControlsBar:
     def __init__(self):
 
-        self.quick = ft.Tab(text="Quick")
-        self.preflight = ft.Tab(text="PreFlight")
-        self.actions = ft.Tab(text="Actions")
+        self.quick = ft.Tab(text="Quick", content=ft.Container())
+        self.preflight = ft.Tab(text="PreFlight", content=ft.Container())
+        self.actions = ft.Tab(text="Actions", content=ft.Container())
 
     def get_main_controls_bar(self):
         return ft.Container(content=TabsCreator(tabs=[self.quick, self.preflight, self.actions]))

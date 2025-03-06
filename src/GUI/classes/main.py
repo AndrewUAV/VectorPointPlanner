@@ -22,8 +22,8 @@ import flet as ft
 from VectorPointPlanner import VectorPointPlanner
 
 
-def main(page: ft.Page):
-    vvp = VectorPointPlanner()
+async def main(page: ft.Page):
+    vvp = VectorPointPlanner(page)
     page.add(vvp.setup_vpp())
 
 
