@@ -2,13 +2,14 @@ import flet as ft
 
 
 class ButtonCreator(ft.CupertinoFilledButton):
-    def __init__(self, text="Button"):
+    def __init__(self, on_click=None, text="Button"):
         super().__init__()
         self.content = ft.Text(text)
         self.opacity_on_click = 0.3
         self.bgcolor = ft.Colors.ORANGE
         self.color = ft.Colors.BLACK
         self.expand = True  # дозволяє кнопкам займати доступну площу
+        self.on_click = on_click
 
 
 if __name__ == "__main__":

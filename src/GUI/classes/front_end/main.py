@@ -23,8 +23,10 @@ from VectorPointPlanner import VectorPointPlanner
 
 
 async def main(page: ft.Page):
-    vvp = VectorPointPlanner(page)
-    page.add(vvp.setup_vpp())
+    vector_point_planner = VectorPointPlanner(page)
+    page.add(vector_point_planner.setup_vpp())
+    await vector_point_planner.show_page("data")
+
 
 
 if __name__ == "__main__":
